@@ -151,4 +151,4 @@ Universidad Autonoma del Estado de Hidalgo - Licenciatura en Matematicas Aplicad
 
 ## Uso de inteligencia artificial
 
-De acuerdo con las bases del reto, se declara el uso de inteligencia artificial (Claude, de Anthropic) como apoyo en el codigo en R, el desarrollo de la aplicacion y la revision de la redaccion. Los prompts utilizados se incluyen en los anexos del reporte tecnico.
+De acuerdo con las bases del reto, se declara el uso de inteligencia artificial (Claude, de Anthropic) como apoyo en el codigo en R, el desarrollo de la aplicacion. Los prompts utilizados se incluyen en los anexos del reporte tecnico.
