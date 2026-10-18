@@ -15,6 +15,7 @@ Modelo para estimar el rendimiento (t/ha) de 197 parcelas de cebada de temporal 
 ```
 agrocebada/
 ├── README.md        <- este archivo
+├── Agrocebada.pdf   <- documento final del reto
 ├── codigos/         <- codigos en R del analisis (se corren en orden)
 ├── app/
 │   ├── app.R        <- codigo de la aplicacion (shiny)
@@ -22,6 +23,7 @@ agrocebada/
 └── docs/            <- la app convertida en pagina web con shinylive (no se edita a mano)
 ```
 
+📄 [Ver el documento final (PDF)](Agrocebada.pdf)
 ---
 
 ## Datos
