@@ -10,6 +10,7 @@ setwd('/Users/rebec/Downloads/DataSet/DATASET_RETO_AGRO_2026')
 # Visualizo que tiene la carpeta en la que voy a trabajar
 list.files()
 
+# LECTURA DE LA BASE ------------------------------------------------------
 
 # Leemos la base que armamos en el script 08
 base = read.csv("23_Base_Modelo_Rendimiento.csv")
