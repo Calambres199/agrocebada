@@ -3,6 +3,7 @@
 Modelo para estimar el rendimiento (t/ha) de 197 parcelas de cebada de temporal en Hidalgo, Tlaxcala y Puebla, ciclo abril-octubre 2025, a partir de indices satelitales, clima y topografia. Desarrollado para el **Reto AgroCebada 2026 de FIRA**.
 
 **Aplicacion en linea:** https://calambres199.github.io/agrocebada/
+
 **Video:** 
 
 > La aplicacion corre directamente en el navegador. La primera vez puede tardar unos segundos en cargar.
