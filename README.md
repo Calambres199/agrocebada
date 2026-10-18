@@ -4,6 +4,8 @@ Modelo para estimar el rendimiento (t/ha) de 197 parcelas de cebada de temporal 
 
 **Aplicacion en linea:** https://calambres199.github.io/agrocebada/
 
+**Video:** https://youtu.be/1GEeJDZ8yp4?si=VbJI8RiiMweC-vOk
+
 > La aplicacion corre directamente en el navegador. La primera vez puede tardar unos segundos en cargar.
 
 ---
