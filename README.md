@@ -45,8 +45,8 @@ agrocebada/
 - Paquetes:
 
 ```r
-install.packages(c("terra", "dplyr", "tidyr", "zoo", "readr", "tseries",
-                   "forecast", "corrplot", "shiny", "bslib", "shinylive"))
+install.packages(c("terra", "dplyr", "tidyr", "zoo", "readr", "lubridate",
+                   "tseries", "forecast", "corrplot", "shiny", "bslib", "shinylive"))
 ```
 
 - Los datos del reto (DATASET_RETO_AGRO_2026). En cada codigo hay que cambiar el `setwd()` por la carpeta donde esten los datos en su computadora.
