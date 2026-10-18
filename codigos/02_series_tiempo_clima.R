@@ -1,13 +1,6 @@
 # Limpiamos el ambiente de trabajo
 rm(list = ls())
 
-# Instalamos las librerias a utilizar
-install.packages("dplyr")           # Para manejar tablas
-install.packages("tidyr")           # Para cambiar la forma de las tablas
-install.packages("readr")           # Para guardar tablas en csv
-install.packages("forecast")        # Para estimar diferentes modelos
-install.packages("tseries")         # Para el análisis de series de tiempo
-
 # Cargamos las librerias
 library(dplyr)
 library(tidyr)
@@ -24,7 +17,7 @@ list.files()
 # PRECIPITACIÓN -----------------------------------------------------------
 
 # Llamamos a la base de datos que se extrajo de las imagenes .tif de precipitacion
-precipitacion1 = read.csv("1_Precipitacion_Extraida.csv")
+precipitacion1 = read.csv("1_precipitacion_extraida.csv")
 
 # Visualizamos las primeras filas de la base de datos precipitacion1
 head(precipitacion1)
@@ -39,8 +32,7 @@ precipitacion1$fecha = as.Date(paste(precipitacion1$anio, precipitacion1$mes, 1,
 head(precipitacion1)
 
 # Realizamos la lista de las 197 filas
-ids = sort(unique(precipitacion1$ID_POLIGON))
-
+ids = sort(unique(precipitacion1$ID_POLIGONO))
 # Pedimos el conteo de las filas, deben de ser 197
 length(ids)                           
 
@@ -58,8 +50,8 @@ boxplot(precipitacion_mm ~ mes,
 names(precipitacion1)
 
 # Pasaremos nuestra base de datos de formato ancho a formato largo, esto para poder realizar la serie de datos
-precipitacion_ancho = pivot_wider(select(precipitacion1, ID_POLIGON, fecha, precipitacion_mm), 
-                                  names_from = ID_POLIGON, values_from = precipitacion_mm)
+precipitacion_ancho = pivot_wider(select(precipitacion1, ID_POLIGONO, fecha, precipitacion_mm), 
+                                  names_from = ID_POLIGONO, values_from = precipitacion_mm)
 
 # Ordenaremos las base de datos precipitacion_ancho por fechas
 precipitacion_ancho = arrange(precipitacion_ancho, fecha)
@@ -72,7 +64,7 @@ matriz_precipitacion = as.matrix(precipitacion_ancho[, -1])
 matriz_precipitacion
 
 #Descargamos la base de datos precipitacion_ancho
-write_csv(precipitacion_ancho, "5_Preciptación_Ancho.csv")
+write_csv(precipitacion_ancho, "5_Precipitacion_Ancho.csv")
 
 # Graficaremos varias series a la vez
 matplot(
@@ -208,7 +200,7 @@ write_csv(resultados_precipitacion, "6_Resultados Serie de Tiempo de Precipitaci
 # TEMPERATURA MINIMA ------------------------------------------------------
 
 # Llamamos la base de datos que se extrajo de las imagenes tif de Temperatura Minima
-temperatura_minima1 = read.csv("2_Temperatura_Minima_Extraida.csv")
+temperatura_minima1 = read.csv("2_tmin_extraida.csv")
 
 # Visualizamoslas primeras filas de la base de datos de temperatura_minima
 head(temperatura_minima1)
@@ -225,7 +217,7 @@ head(temperatura_minima1)
 names(temperatura_minima1)
 
 # Realizamos la lista de las 197 filas
-id = sort(unique(temperatura_minima1$ID_POLIGON))
+ids = sort(unique(temperatura_minima1$ID_POLIGONO))
 
 # Pedimos el conteo de las filas, deben de ser 197
 length(ids)
@@ -241,8 +233,8 @@ boxplot (tmin_c ~ mes,
          ylab = "Temperatura Minima en c")
 
 # Pasaremos nuestra base de datos de formato ancho a formato largo, esto para poder realizar la serie de datos
-temperatura_minima_ancho = pivot_wider(select(temperatura_minima1, ID_POLIGON, fecha, tmin_c),
-                                       names_from = ID_POLIGON, values_from = tmin_c)
+temperatura_minima_ancho = pivot_wider(select(temperatura_minima1, ID_POLIGONO, fecha, tmin_c),
+                                       names_from = ID_POLIGONO, values_from = tmin_c)
 
 # Ordenamos la base de datos temperatura_minima_ancho por fechas
 temperatura_minima_ancho = arrange(temperatura_minima_ancho, fecha)
@@ -389,7 +381,7 @@ write_csv(resultados_temperatura_minima, "8_Resultados Serie de Tiempo de Temper
 # TEMPERATURA MÁXIMA ------------------------------------------------------
 
 # Llamamos la base de datos que se extrajo de las imagenes tif de Temperatura Máxima
-temperatura_maxima1 = read.csv("3_Temperatura_Maxima_Extraida.csv")
+temperatura_maxima1 = read.csv("3_tmax_extraida.csv")
 
 # Visualizamoslas primeras filas de la base de datos de temperatura_maxima1
 head(temperatura_maxima1)
@@ -404,7 +396,7 @@ temperatura_maxima1$fecha = as.Date(paste(temperatura_maxima1$anio, temperatura_
 head(temperatura_maxima1)
 
 # Realizamos la lista de las 197 filas
-id = sort(unique(temperatura_maxima1$ID_POLIGON))
+ids = sort(unique(temperatura_maxima1$ID_POLIGONO))
 
 # Pedimos el conteo de las filas, deben de ser 197
 length(ids)
@@ -422,8 +414,8 @@ boxplot (tmax_c ~ mes,
 names(temperatura_maxima1)
 
 # Pasaremos nuestra base de datos de formato ancho a formato largo, esto para poder realizar la serie de datos
-temperatura_maxima_ancho = pivot_wider(select(temperatura_maxima1, ID_POLIGON, fecha, tmax_c),
-                                       names_from = ID_POLIGON, values_from = tmax_c)
+temperatura_maxima_ancho = pivot_wider(select(temperatura_maxima1, ID_POLIGONO, fecha, tmax_c),
+                                       names_from = ID_POLIGONO, values_from = tmax_c)
 
 # Ordenamos la base de datos temperatura_maxima_ancho por fechas
 temperatura_maxima_ancho = arrange(temperatura_maxima_ancho, fecha)
@@ -566,3 +558,4 @@ checkresiduals(auto.arima(ts(temperatura_maxima_ancho[["AGC_001"]], start = c(20
 
 # Guardar como CSV 
 write_csv(resultados_temperatura_maxima, "10_Resultados Serie de Tiempo de Temperatura Maxima.csv")
+

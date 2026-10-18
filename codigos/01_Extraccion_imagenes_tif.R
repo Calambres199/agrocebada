@@ -1,12 +1,13 @@
 ####### CODIGO COMPLETO QUE VA A ESTAR EN GITHUB CON EXPLICACIÓN DE TODO LO QUE HACE ######
 ############### INSTALAR PAQUETES
+## Solo es necesario instalar los paquetes una vez
 install.packages("terra")
 install.packages("dplyr")
 install.packages("tidyr")
-install.packages("read")
+install.packages("readr")
 install.packages("tseries")
-install.packages("forescast")
-install.packages("terra")
+install.packages("forecast")
+install.packages("tidyverse")
 #######################33
 library(terra)   # para leer imagenes .tif (raster) y shapefiles (poligonos) y cruzarlos
 library(dplyr)   # para manejar tablas: select (escoger columnas) y arrange (ordenar)
@@ -14,7 +15,7 @@ library(tidyr)   # para cambiar la forma de las tablas
 library(readr)   # para guardar tablas en csv: write_csv
 library(tseries) # analisis de series de tiempo
 library(forecast) #para estimar diferentes modelos
-library(tidyr)
+
 # setwd: le dice a R en que carpeta estan mis archivos
 setwd('/Users/rebec/Downloads/DataSet/DATASET_RETO_AGRO_2026')
 
@@ -70,7 +71,7 @@ sum(is.na(prec_largo$precipitacion_mm)) # debe dar 0. Debe dar 0 porque eso sign
 head(prec_largo)                        # primeras 6 filas
 
 # guardar en csv
-write_csv(prec_largo, "precipitacion_extraida.csv")
+write_csv(prec_largo, "1_precipitacion_extraida.csv")
 
 ################# TEMPERATURA MAXIMA Y MINIMA ############################
 ##### TEMPERATURA MINIMA #############
@@ -118,7 +119,7 @@ sum(duplicated(tmin_largo[, c("ID_POLIGONO", "fecha")]))  # debe dar 0
 head(tmin_largo)
 
 # guardar en csv
-write_csv(tmin_largo, "tmin_extraida.csv")
+write_csv(tmin_largo, "2_tmin_extraida.csv")
 
 
 ######## TEMPERATURA MAXIMA ##########
@@ -155,7 +156,7 @@ sum(duplicated(tmax_largo[, c("ID_POLIGONO", "fecha")]))  # debe dar 0
 head(tmax_largo)
 
 # guardar en csv
-write_csv(tmax_largo, "tmax_extraida.csv")
+write_csv(tmax_largo, "3_tmax_extraida.csv")
 
 #################### TOPOGRAFIA #####################
 parcelas = vect("Parcelas_Reto_AGC_CONJUNTO_70_30/Parcelas_Reto_AGC_CONJUNTO.shp")
@@ -213,141 +214,7 @@ summary(topografia)                       # rangos de elevacion y pendiente
 head(topografia)
 
 # guardar en csv
-write_csv(topografia, "topografia_extraida.csv")
+write_csv(topografia, "4_topografia_extraida.csv")
 
 ##############################################
 ##############################################
-##############################################
-
-
-setwd('/Users/rebec/Downloads/DataSet/DATASET_RETO_AGRO_2026')
-
-# Llamamos la base que se extrajo de las imagenes .tif de precipitacion
-prec = read.csv("precipitacion_extraida.csv")
-
-# el mes puede venir como texto, asi que lo pasamos a numero
-prec$mes = as.numeric(prec$mes)
-# creo la columna fecha con el dia 1 de cada mes (ejemplo: 2022-01-01 = enero 2022)
-prec$fecha = as.Date(paste(prec$anio, prec$mes, 1, sep = "-"))
-
-# lista de las 197 parcelas
-ids = sort(unique(prec$ID_POLIGONO))
-length(ids)   # debe dar 197
-
-# revisar los datos de precipitacion con un summary, ya que da el max, min, mediana, media y los cuartiles
-summary(prec$precipitacion_mm)
-
-# boxplot por mes, vamos a comparar valores con los de su mes y ver por mes valores atipicos
-boxplot(precipitacion_mm ~ mes, data = prec, main = "Precipitacion por mes (197 parcelas)", xlab = "Mes", ylab = "mm")
-
-# Vamos a graficar las 197 series de tiempo, para eso vamos a pasar de tener una columna con todos los datos,
-# a tener una columna por parcela y dejaremos las filas por meses.
-prec_ancho = pivot_wider(select(prec, ID_POLIGONO, fecha, precipitacion_mm), names_from = ID_POLIGONO, values_from = precipitacion_mm)
-prec_ancho = arrange(prec_ancho, fecha) # arrange ordena las fechas de la base prec_ancho
-matriz = as.matrix(prec_ancho[, -1])    # creamos una matriz de datos quitandole la columna de fechas
-
-# si se desea descargar esta base de datos ya a lo ancho se usa el siguiente comando: write_csv(prec_ancho, "prec_ancho.csv")
-
-matplot(prec_ancho$fecha, matriz, type = "l", lty = 1, col = rgb(0, 0, 1, 0.15), xlab = "Fecha", ylab = "mm", main = "Precipitacion mensual de las parcelas")
-# col = rgb(0, 0, 1, 0.15) lo que hace es que le da el color azul con (0,0,1) con transparencia alpha = 0.15
-# matplot es una funcion que deja graficar varias series a la vez, donde recibe valores en forma de vector o matriz, matplot(x,y,...)
-# en este caso agarramos la columna de las fechas (eje X) y graficamos la precipitacion de cada parcela, que esa info la tiene matriz.
-
-
-# Analisis de las 197 series de tiempo
-
-resultados_prec = data.frame() # Una base de datos vacia para ir guardando
-
-todos_residuos = c()           # vector vacio donde se van a juntar los residuos de todas las parcelas
-
-for (i in ids){
-  print(i)   # muestra en la consola que parcela va procesando, para ver el avance
-  
-  serie = ts(prec_ancho[[i]], start = c(2022,1), frequency = 12) # que de la base ancho tome las columnas y me las haga en series de tiempo
-  
-  # pruebas de estacionariedad: ADF, KPSS y la de Phillips-Perron
-  adf  = adf.test(serie)
-  kpss = kpss.test(serie, null = "Level")
-  pp   = pp.test(serie)
-  
-  # la serie es estacionaria si las tres pruebas coinciden
-  # ADF y PP: si p < 0.05 entonces podemos decir que es estacionaria; KPSS: si p > 0.05 entonces podemos decir que es estacionaria
-  estacionaria = adf$p.value < 0.05 & kpss$p.value > 0.05 & pp$p.value < 0.05
-  
-  # modelo de la serie: auto.arima elige el modelo solo
-  modelo = auto.arima(serie)
-  
-  # Analizaremos los residuos tambien: si el modelo es bueno, deben parecerse a una normal
-  # con media 0, varianza constante (aprox.) y sin autocorrelacion
-  residuos = residuals(modelo)
-  
-  # agrego los residuos de esta parcela al vector con los de todas
-  todos_residuos = c(todos_residuos, residuos)
-  
-  
-  
-  # Ljung-Box nos ayuda a ver si quedo autocorrelacion en los residuos del modelo
-  # si p > 0.05 los residuos no tienen patron y el modelo es adecuado
-  ljung = Box.test(residuals(modelo), lag = 12, type = "Ljung-Box")
-  
-  # Para la autocorrelacion se hace una prueba de Ljung-Box, o en pocas palabras un Box.test de los residuos
-  # (tambien se puede ver con checkresiduals(modelo))
-  # Si p > 0.05 entonces no hay autocorrelacion, es decir, no quedo un patron que el modelo no haya capturado
-  ljung = Box.test(residuos, lag = 12, type = "Ljung-Box")
-  
-  
-  
-  # Aqui guardaremos los resultados de las pruebas de atras
-  resultados_prec = rbind(resultados_prec, data.frame(
-    ID_POLIGONO    = i,                          # nombre de la parcela
-    n_meses        = length(serie),              # cuantos meses tiene la serie (debe ser 48)
-    promedio_mm    = round(mean(serie), 1),      # precipitacion promedio, con 1 decimal
-    desv_mm        = round(sd(serie), 1),        # desviacion estandar (que tanto varia), con 1 decimal
-    adf_p          = round(adf$p.value, 3),      # $p.value saca solo el p-valor de la prueba ADF
-    kpss_p         = round(kpss$p.value, 3),     # p-valor de la prueba KPSS
-    pp_p           = round(pp$p.value, 3),       # p-valor de la prueba Phillips-Perron
-    estacionaria   = estacionaria,               # TRUE si las tres pruebas dicen que es estacionaria
-    modelo         = as.character(modelo),       # modelo elegido por auto.arima
-    aic            = round(modelo$aic, 1),       # AIC del model
-    aicc	   = round(modelo$aicc, 1),   	 # AICc: criterio con el que auto.arima eligio el modelo
-    bic            = round(modelo$bic, 1),       # BIC del modelo
-    media_residuos = round(mean(residuos), 2),   # promedio de los residuos (debe ser cercano a 0)
-    ljung_p        = round(ljung$p.value, 3)     # p-valor de Ljung-Box (sin coma, es la ultima)
-  ))
-}
-
-
-# Conclusiones de cada prueba
-# ADF y PP: si p < 0.05 entonces podria ser estacionaria
-# KPSS: si p > 0.05 entonces podriamos decir que es estacionaria
-resultados_prec$adf_estac  = resultados_prec$adf_p  < 0.05
-resultados_prec$kpss_estac = resultados_prec$kpss_p > 0.05
-resultados_prec$pp_estac   = resultados_prec$pp_p   < 0.05
-
-# Ljung: si p > 0.05 los residuos no tienen autocorrelacion (el modelo es adecuado)
-resultados_prec$modelo_ok  = resultados_prec$ljung_p > 0.05
-
-# porcentaje de parcelas estacionarias segun cada prueba
-round(mean(resultados_prec$adf_estac) * 100, 1)
-round(mean(resultados_prec$kpss_estac) * 100, 1)
-round(mean(resultados_prec$pp_estac) * 100, 1)
-# porcentaje de parcelas estacionarias segun las tres pruebas a la vez
-round(mean(resultados_prec$estacionaria) * 100, 1)
-# cuantas parcelas quedaron con cada modelo
-sort(table(resultados_prec$modelo), decreasing = TRUE)
-# porcentaje de parcelas sin autocorrelacion en los residuos (Ljung-Box)
-round(mean(resultados_prec$modelo_ok) * 100, 1)
-# promedio de los residuos en todas las parcelas (deben ser cercanos a 0)
-summary(resultados_prec$media_residuos)
-
-# un solo histograma con los residuos de las 197 parcelas juntas
-# si tiene forma de campana, los residuos son aproximadamente normales
-hist(todos_residuos, breaks = 40, main = "Residuos de las 197 parcelas",
-     xlab = "Residuo", col = "lightblue")
-abline(v = 0, col = "red", lwd = 2)   # linea en 0: la campana debe estar centrada ahi
-
-# si quiero ver el diagnostico completo de UNA parcela (grafica de residuos, su ACF e histograma)
-checkresiduals(auto.arima(ts(prec_ancho[["AGC_001"]], start = c(2022, 1), frequency = 12)))
-
-# guardar la tabla con los resultados de las 197 parcelas
-write_csv(resultados_prec, "resultados_series_precipitacion.csv")
